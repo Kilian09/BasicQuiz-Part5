@@ -50,6 +50,79 @@ public class QuestionActivity
 
     }
 
+    @Override
+    public void onRestoreLayoutData() {
+        Log.d(TAG, "onRestoreLayoutData()");
+
+        Bundle savedState = mediator.getQuestionState();
+
+        if (savedState == null) {
+            return;
+        }
+
+        currentReply = savedState.getString(KEY_REPLY);
+        nextButtonEnabled = savedState.getBoolean(KEY_ENABLED);
+
+        answerCheated = savedState.getBoolean(KEY_CHEATED);
+
+        presenter.onQuestionIndexUpdated(savedState.getInt(KEY_INDEX));
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        Log.d(TAG, "onResume()");
+
+        Log.d(TAG, "cheated: " + answerCheated);
+
+        if (answerCheated) { //cheated = false
+            presenter.onAnswerCheated();
+        }
+    }
+
+    @Override
+    public void setCurrentQuestion(String question) {
+        this.currentQuestion = question; // question = "Question #1: True"
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        presenter.onPause();
+    }
+
+    @Override
+    public void onSaveLayoutData(int questionIndex) {
+        Log.d(TAG, "onSaveLayoutData()");
+        Bundle outState = new Bundle();
+
+        outState.putInt(KEY_INDEX, questionIndex);
+        outState.putString(KEY_REPLY, currentReply);
+        outState.putBoolean(KEY_ENABLED, nextButtonEnabled);
+        outState.putBoolean(KEY_CHEATED, answerCheated);
+
+        mediator.setQuestionState(outState);
+    }
+
+    private void initArchComponents() {
+        mediator = (AppMediator) getApplication();
+
+        String[] questions = getResources().getStringArray(R.array.question_array);
+        int[] replies = getResources().getIntArray(R.array.reply_array);
+
+        WeakReference<QuestionContract.View> view =
+                new WeakReference<>((QuestionContract.View) this);
+
+
+
+
+        QuestionContract.Model model = new QuestionModel(questions, replies);
+        presenter = new QuestionPresenter(view, model);
+
+    }
+
     private void linkLayoutComponents() {
         falseButton = findViewById(R.id.falseButton);
         trueButton = findViewById(R.id.trueButton);
@@ -67,59 +140,18 @@ public class QuestionActivity
         cheatButton.setText(R.string.cheat_button_text);
     }
 
-    private void initArchComponents() {
-
-        mediator = (AppMediator) getApplication();
-
-        String[] questions = getResources()
-                .getStringArray(R.array.question_array);
-        int[] replies = getResources().getIntArray(R.array.reply_array);
-
-        WeakReference<QuestionContract.View> view =
-                new WeakReference<>((QuestionContract.View) this);
-
-
-        mediator.setCheatActivityObserver(view);
-
-        QuestionContract.Model model = new QuestionModel(questions, replies);
-        presenter = new QuestionPresenter(view, model);
-
-    }
-
-    protected void onResume() {
-        super.onResume();
-
-        if (answerCheated) { //cheated = false
-            presenter.onAnswerCheated();
-        }
-    }
-
-    protected void onPause() {
-        super.onPause();
-
-        presenter.onPause();
-    }
-
-    public void setCurrentQuestion(String question) {
-        this.currentQuestion = question; // question = "Question #1: True"
-    }
-
+    @Override
     public void resetReplyContent() {
         currentReply = getString(R.string.empty_text); //reply = "???"
     }
 
-    public void onRestoreLayoutData() {
-        Bundle savedState = mediator.getQuestionState();
-
-        if (savedState == null)
-            return;
-    }
-
+    @Override
     public void updateLayoutContent() {
         questionText.setText(currentQuestion); // "Question #1: True"
         replyText.setText(currentReply);      // "???"
     }
 
+    @Override
     public void updateReplyContent(boolean isReplyCorrect) {
         if (isReplyCorrect) {
             currentReply = getString(R.string.correct_text); // reply = "correct"
@@ -128,10 +160,12 @@ public class QuestionActivity
         }
     }
 
+    @Override
     public void enabledNextButton() {
         nextButtonEnabled = true;
     }
 
+    @Override
     public void disabledNextButton() {
         nextButtonEnabled = false;
     }
@@ -161,6 +195,7 @@ public class QuestionActivity
 
     }
 
+    @Override
     public void startCheatActivity(int reply) {
 
         Intent intent = new Intent(this, CheatActivity.class);
@@ -168,21 +203,13 @@ public class QuestionActivity
         startActivity(intent);
     }
 
-    public void onSaveLayoutData(int questionIndex) {
-        Bundle outState = new Bundle();
-        outState.putInt(KEY_INDEX, questionIndex);
-        outState.putString(KEY_REPLY, currentReply);
-        outState.putBoolean(KEY_ENABLED, nextButtonEnabled);
-        outState.putBoolean(KEY_CHEATED, answerCheated);
-
-        mediator.setQuestionState(outState);
-    }
-
+    @Override
     public void notificationFromCheatActivity(Bundle state) {
         answerCheated = state.getBoolean(CheatActivity.EXTRA_CHEATED, false);
         presenter.onNotificationFromCheatActivity();
     }
 
+    @Override
     public void resetAnswerCheated() {
         answerCheated = false;
     }

@@ -11,22 +11,27 @@ public class QuestionModel implements QuestionContract.Model {
         this.replyArray = replies;
     }
 
+    @Override
     public String getCurrentQuestion() {
         return questionArray[questionIndex]; //question = "Question #1: True"
     }
 
+    @Override
     public int getCurrentReply() {
         return replyArray[questionIndex];
     }
 
+    @Override
     public int getCurrentIndex() {
         return questionIndex;
     }
 
+    @Override
     public void setCurrentIndex(int index) {
         this.questionIndex = index;
     }
 
+    @Override
     public boolean isCurrentReplyCorrect(boolean isReplyTrue) {
         if (isReplyTrue) {
             return checkReplyWhenTrueButtonClicked();
@@ -51,10 +56,12 @@ public class QuestionModel implements QuestionContract.Model {
         }
     }
 
+    @Override
     public void incrementCurrentIndex() {
         questionIndex++; //index = 1
     }
 
+    @Override
     public boolean hasMoreQuestions() {
         checkCurrentIndex();
 

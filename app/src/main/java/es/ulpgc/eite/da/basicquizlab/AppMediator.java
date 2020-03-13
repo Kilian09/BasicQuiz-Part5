@@ -1,5 +1,6 @@
 package es.ulpgc.eite.da.basicquizlab;
 
+
 import android.app.Application;
 import android.os.Bundle;
 
@@ -7,13 +8,19 @@ import java.lang.ref.WeakReference;
 
 import es.ulpgc.eite.da.basicquizlab.question.QuestionContract;
 
-public class AppMediator extends Application {
+public class AppMediator extends Application  {
 
     private Bundle questionState = null;
+    private Bundle cheatState;
+
     private WeakReference<QuestionContract.View> questionView;
 
     public Bundle getQuestionState() {
-        return questionState; //state = null
+        return questionState;
+    }
+
+    public Bundle getCheatState() {
+        return cheatState;
     }
 
     public void setQuestionState(Bundle state) {
@@ -25,7 +32,8 @@ public class AppMediator extends Application {
     }
 
     public void setCheatActivityObserver(
-            WeakReference<QuestionContract.View> view) {
+            WeakReference<QuestionContract.View> view
+    ) {
         this.questionView = view;
     }
 
